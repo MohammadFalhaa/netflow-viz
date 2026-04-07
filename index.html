@@ -278,7 +278,8 @@
     .member-card:hover { background: #20243a; }
     .member-top { display: flex; align-items: baseline; gap: 6px; }
     .member-rank { font-size: 10px; color: #444; width: 14px; flex-shrink: 0; }
-    .member-username { font-size: 12px; font-weight: 600; color: #7c8cf8; }
+    .member-username { font-size: 12px; font-weight: 600; color: #7c8cf8; text-decoration: none; }
+    .member-username:hover { text-decoration: underline; }
     .member-display { font-size: 11px; color: #888; margin: 2px 0 3px 20px; }
     .member-metrics {
       display: flex; gap: 10px; margin-left: 20px;
@@ -1404,7 +1405,7 @@ function membersHTML(members, limit = 10) {
     <div class="member-card">
       <div class="member-top">
         <span class="member-rank">${i + 1}</span>
-        <span class="member-username">@${m.username}</span>
+        <a class="member-username" href="https://x.com/${m.username}" target="_blank" rel="noopener noreferrer">@${m.username}</a>
       </div>
       ${m.displayName ? `<div class="member-display">${m.displayName}</div>` : ''}
       <div class="member-metrics">
