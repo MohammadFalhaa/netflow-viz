@@ -603,6 +603,7 @@ document.getElementById('flow-clear').onclick = () => {
   removeLS('flow')
   clearFileBtn('flow-label', 'flow-dot', 'flow-clear', 'Upload Flow CSV')
   document.getElementById('flow-input').value = ''
+  resetToBlank()
 }
 
 document.getElementById('members-clear').onclick = () => {
@@ -611,6 +612,19 @@ document.getElementById('members-clear').onclick = () => {
   clearFileBtn('members-label', 'members-dot', 'members-clear', 'Upload Members CSV')
   document.getElementById('members-input').value = ''
   if (state.flowData) tryRender()
+}
+
+function resetToBlank() {
+  // Stop simulation and wipe the SVG
+  if (ui.simulation) { ui.simulation.stop(); ui.simulation = null }
+  ui.nodes = []; ui.allEdges = []; ui.edgeSel = null; ui.nodeGroups = null
+  ui.selectedNodes = []; ui.selectedEdge = null; ui.pathKeys = null
+  d3.select('#graph-svg').selectAll('*').remove()
+  closePanel(); resetSelection()
+  document.getElementById('empty-state').style.display = ''
+  document.getElementById('legend').style.display = 'none'
+  document.getElementById('edge-count-label').textContent = '—'
+  document.getElementById('community-count-label').textContent = '— / —'
 }
 
 function readFile(file, cb) {
@@ -1645,7 +1659,23 @@ const SAMPLE_MEMBERS = `node_id,username,display_name,pagerank,in_degree,out_deg
 24,xavier_film,Xavier Film,0.0140,2400,18,4
 25,yara_lit,Yara Literature,0.0100,1900,32,4`
 
-document.getElementById('sample-btn').addEventListener('click', () => {
+const sampleBtn = document.getElementById('sample-btn')
+let sampleActive = false
+
+sampleBtn.addEventListener('click', () => {
+  if (sampleActive) {
+    // Second click → clear everything and go back to blank
+    sampleActive = false
+    sampleBtn.textContent = 'Sample data'
+    state.flowData = null; state.memberData = null
+    removeLS('flow'); removeLS('members')
+    clearFileBtn('flow-label',    'flow-dot',    'flow-clear',    'Upload Flow CSV')
+    clearFileBtn('members-label', 'members-dot', 'members-clear', 'Upload Members CSV')
+    resetToBlank()
+    return
+  }
+  sampleActive = true
+  sampleBtn.textContent = 'Clear sample'
   state.flowData   = parseFlowCSV(SAMPLE_FLOW)
   state.memberData = parseMembersCSV(SAMPLE_MEMBERS)
   saveLS('flow',    SAMPLE_FLOW,    'sample_flow.csv')
@@ -1656,6 +1686,11 @@ document.getElementById('sample-btn').addEventListener('click', () => {
   document.getElementById('legend').style.display = 'block'
   initVisualization(state.flowData, state.memberData)
 })
+
+// Reset sampleActive if user loads their own files
+function clearSampleState() { sampleActive = false; sampleBtn.textContent = 'Sample data' }
+document.getElementById('flow-input').addEventListener('change',    clearSampleState)
+document.getElementById('members-input').addEventListener('change', clearSampleState)
 
 // ── UTILS ────────────────────────────────────────────────────────────────────
 function debounce(fn, ms) {
